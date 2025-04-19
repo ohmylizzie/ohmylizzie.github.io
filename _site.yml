@@ -1,0 +1,12 @@
+name: my-website
+navbar:
+  title: BIOL 3100
+  left:
+    - text: Home
+      href: index.html
+    - text: Check Out My Poster
+      href: ./DIY_HVPE_Poster.pdf
+    - text: Final Project
+      href: Research_Website.html
+    - text: CV
+      href: ./cv/Elizabeth Henstrom_CVcopy.pdf

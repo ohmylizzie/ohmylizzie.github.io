@@ -1,20 +1,19 @@
 ---
-output: html_document
+title: "Elizabeth Henstrom - Aspiring Biochemist"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+site: "rmarkdown::site"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+
 <body style="background-color: lightpink;">
 
-
-
-## [ABOUT ME](./about-me) | [CV](./cv/Elizabeth Henstrom_CVcopy.pdf) | [Butterflies and Moths Final Project](./Research_Website.html) | [Check Out My Poster](./DIY_HVPE_Poster.pdf) ##
-
-# **Elizabeth Henstrom - Aspiring Biochemist** #
 
 ```{r, out.width="60%", echo=FALSE, fig.align = "center"}
 knitr::include_graphics("./image/IMG_6850.jpeg")
 ```
-
-

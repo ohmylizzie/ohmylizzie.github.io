@@ -1,6 +1,9 @@
 ---
 title: "Butterflies and Macro-Moths in Great Britain and Ireland (2022)"
-output: html_document
+output: 
+  html_document:
+    toc: true          
+    toc_float: true    
 date: "April 22, 2025"
 ---
 
@@ -13,7 +16,7 @@ knitr::include_graphics("./image/purple_emperor.jpeg")
 ```
 <body style="background-color: lightgrey;">
 
-### Introduction
+## Introduction
 
 Butterflies and moths are a very important part of the ecosystem. They are natural pollinators, important food sources for various animals, and they can indicate ecological changes to the environment. 
 
@@ -21,7 +24,7 @@ In 2022, the UK has seen decreases in its butterfly population since the 1970's 
 
 For moths, light pollution was a significant factor that seemed to be aiding in the decrease of moth populations. "Eco-friendly" LED lights replaced many of the typical sodium light bulbs in England [2]. This led to moths hovering around lights, being eaten by predators, and laying less eggs. Thankfully, LED lights are dimable, allowing for a quick fix that would be able to help the struggling moth population.
 
-### Backround: So, why butterflies and moths?
+## Backround: So, why butterflies and moths?
 
 Ever since I was a young girl, I had been interested in insects. I used to collect them in jars, give them a little dirt, a couple of leaves, screw the lid on, and then lose the jar. Much to the chagrin of my little, innocent mind, I'd end up finding the jars... with just little stick legs remaining. In my garden, there were many, many caterpillars. They used to eat my father's petunias, one of his favorite flowers. So, because I loved caterpillars and wanted them out of the garden, I did what I knew best and created a caterpillar jar. 
 
@@ -39,6 +42,7 @@ library(ggplot2)
 library(easystats)
 library(MASS)
 library(caret)
+library(randomForest)
 ```
 
 ```{r removingupperstuffongraph, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
@@ -141,7 +145,6 @@ egg_logit_data = egg_data %>%
   mutate(month_num = as.numeric(month)) %>%
   mutate(is_scarce = ifelse(rarirty_gb == "Nationally Scarce", 1, 0))
 
-# Fit a logistic regression model
 logit_model = glm(data = egg_logit_data,
                    formula = is_scarce ~ month_num,
                    family = "binomial")
@@ -153,7 +156,7 @@ However, looking at species that are nationally scarce and the month of their eg
 performance(logit_model)
 ```
 
-```{r perform2}
+```{r perform2, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 logit_model2 = glm(data = egg_logit_data,
                    formula = is_scarce ~ month_num + nocturnal. + forewing_maximum,
                      family = "binomial")
@@ -174,15 +177,179 @@ logit_model4 = glm(data = egg_logit_data,
 
 
 
-# 1. Exclude columns 1:22
-potential_predictors <- egg_logit_data[, -c(1:22)]
+full_mod = glm(data = egg_logit_data,
+               formula = is_scarce ~ (month_num + nocturnal. + reintroduced + immigrant. + reintroduced) * (england. + scotland. + wales. + northern_ireland + republic_of_ireland),
+               family = "binomial")
 
-# 2. Keep only columns with more than 1 unique value
-valid_cols <- potential_predictors[, sapply(potential_predictors, function(x) length(unique(x)) > 1)]
+stepwise_mod = stepAIC(full_mod, direction = 'both')
 
-# 3. Create formula dynamically
-formula <- as.formula(paste("is_scarce ~", paste(colnames(valid_cols), collapse = " + ")))
+best_mod = glm(data = egg_logit_data,
+                 formula = stepwise_mod$formula,
+                 family = 'binomial')
 
-# 4. Fit logistic regression model
-full_model <- glm(formula, data = egg_logit_data, family = "binomial")
+
+
+
 ```
+
+
+```{r save_egg_data, echo=FALSE, message=FALSE, warning=FALSE}
+
+data = data %>%
+  pivot_longer(cols = starts_with("egg_"),
+               names_to = "month",
+               values_to = "egg_present") %>%
+  mutate(month = str_replace(month, "egg_", "")) %>%
+  mutate(month = str_to_title(month)) %>%
+  mutate(month = factor(month, levels = month.abb)) %>%
+  mutate(month_num = as.numeric(month))
+```
+
+Below is the best model that was found to test the traits with scarcity. Several models were tested, but the model with the highest R2 value was chosen to continue with. The formula from the data set and model comparisons are printed below:
+
+```{r best_mod_formula, echo=FALSE, message=FALSE, warning=FALSE}
+print(best_mod$formula)
+```
+
+
+
+```{r compare, echo=FALSE}
+compare_performance(logit_model, logit_model2, logit_model3, logit_model4, best_mod) %>% 
+  plot()
+```
+
+
+Although the best model found had a relatively good R2 value compared to the rest of the models compared to it, the R2 value was low, with a score of 0.282. This could possibly mean that a linear model is not the best way to describe the correlation. A random forest model was used to observe the correlation and what factors were important to predict if a trait that a species had would lead to its scarcity in the United Kingdom and Ireland.
+
+
+```{r tree, echo=FALSE, message=FALSE, warning=FALSE}
+
+Random_Forest_Model = randomForest(as.factor(is_scarce) ~ month_num + nocturnal. + reintroduced + immigrant.,
+                       data = egg_logit_data, ntree = 500, importance = TRUE)
+
+
+
+varImpPlot(Random_Forest_Model)
+```
+
+
+Now, pupil habitat is being compared to the scarcity to assess if there is a correlation. Its performance is also printed below:
+
+```{r pupil, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+pupil_columns = c(
+  "below_ground", 
+  "leaf_litter_moss_on_ground_soil_surface", 
+  "hostplant_external", 
+  "hostplant_internal_stem", 
+  "hostplant_internal_root", 
+  "other_vegetation_external", 
+  "stone_inc_walls", 
+  "dead_rotten_wood.")
+
+pupil_habitat_data = data %>%
+  dplyr::select(scientific_name., common_name., rarirty_gb, nocturnal., month_num, nocturnal., reintroduced, immigrant., reintroduced, england., scotland., wales., northern_ireland, republic_of_ireland, dplyr::all_of(pupil_columns)) %>%
+  tidyr::pivot_longer(
+    cols = dplyr::all_of(pupil_columns),
+    names_to = "pupation_habitat",
+    values_to = "present") %>%
+  dplyr::filter(present == "1") %>% 
+  dplyr::mutate(is_scarce = ifelse(rarirty_gb == "Nationally Scarce", "Scarce", "Other")) 
+
+
+pupil_habitat_data %>% 
+  filter(is_scarce == "Scarce") %>% 
+  ggplot(aes(x = pupation_habitat, fill = is_scarce)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Pupation Habitat vs. Species Scarcity",
+    x = "Pupation Habitat",
+    y = "Number of Species",
+    fill = "Rarity") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+```{r scarcity_analysis, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+
+scarcity_data = pupil_habitat_data %>% 
+  dplyr::mutate(is_scarce = ifelse(is_scarce == "Scarce", 1, 0)) %>%
+  dplyr::select(pupation_habitat, nocturnal., is_scarce)
+
+
+scarcity_model = glm(is_scarce ~ pupation_habitat,
+  data = scarcity_data,
+  family = "binomial")
+
+```
+
+
+
+
+```{r compp, echo=FALSE, message=FALSE, warning=FALSE}
+performance(scarcity_model)
+```
+
+From the R2 value, there is little to no correlation between the two factors, so the habitat will not be added to the best model.
+
+```{r predict_and_compare, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+set.seed(123) 
+id = createDataPartition(egg_logit_data$is_scarce, p = 0.8, list = FALSE)
+
+egg_train = egg_logit_data[id, ]
+egg_test = egg_logit_data[-id, ]
+
+
+train_mod = glm(data = egg_train,
+                 formula = best_mod$formula,
+                 family = "binomial")
+
+
+egg_test$pred = predict(train_mod, egg_test, type = "response")
+
+```
+
+
+Now the best model is used as a prediction for scarcity. Since scarcity vs egg stage month was used before, it would be interesting to see how the model can also predict this data. 
+
+
+```{r improved_bargraph_with_month_names, message=FALSE, warning=FALSE, echo=FALSE}
+  
+egg_combined = egg_test %>%
+  mutate(pred_class = ifelse(pred > 0.5, "Scarce", "Not Scarce"),
+    actual_class = ifelse(is_scarce == 1, "Scarce", "Not Scarce")) %>%
+  pivot_longer(cols = c(pred_class, actual_class),
+    names_to = "type",
+    values_to = "scarcity") %>%
+  mutate(type = ifelse(type == "pred_class", "Predicted", "Actual"))
+
+egg_combined = egg_combined %>%
+  mutate(month = factor(month_num, levels = 1:12, labels = month.name))
+
+ggplot(egg_combined, aes(x = month, fill = scarcity)) +
+  geom_bar(position = "dodge", alpha = 0.8) +
+  facet_wrap(~type, ncol = 1) +
+  labs(title = "Scarcity by Month: Predicted vs Actual",
+    x = "Month",
+    y = "Count",
+    fill = "Scarcity") +
+  scale_fill_manual(values = c("Scarce" = "mediumvioletred", "Not Scarce" = "lightgrey")) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(size = 12, face = "bold"))
+```
+
+
+It is apparent that the predicted data is not as sensitive to changes as the actual data, showing that perhaps there are other factors than what was previously outlined that are affecting the data.
+
+## Discussion
+
+All-in-all, it seems that the data set that was chosen (and the factors utilized in this research) were not good indicators to predict population scarcity. The data set was very messy and complex, with various different variables. Perhaps given more time and better computing power, a truly full model would be able to better predict what traits factor into scarcity of butterfly and moth populations. 
+
+The random forest model was an interesting way to interpret the data. It provided insight into which variables may hold more predictive power, even if the overall predictive strength of the model remained relatively weak. This hints that while some traits such as nocturnality or immigrant status might play a role, scarcity is likely a result of a much more complex interplay of ecological, environmental, and possibly anthropogenic factors. Future studies could benefit from including spatial distribution data, climate trends, and changes in habitat quality. With cleaner, more comprehensive data and potentially more advanced modeling techniques, stronger and more reliable predictions could be made. Nonetheless, this analysis was a valuable step toward understanding the nuanced factors that influence the population dynamics of butterflies and macro-moths in the UK and Ireland.
