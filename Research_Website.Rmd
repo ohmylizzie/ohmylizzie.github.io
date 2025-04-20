@@ -20,7 +20,7 @@ knitr::include_graphics("./image/purple_emperor.jpeg")
 
 Butterflies and moths are a very important part of the ecosystem. They are natural pollinators, important food sources for various animals, and they can indicate ecological changes to the environment. 
 
-In 2022, the UK has seen decreases in its butterfly population since the 1970's [1]. A staggering 80% of the entire butterfly population across Wales, Northern Ireland, Scotland, and England have been observed. This shows that butterfly diversity is decreasing. 
+In 2022, the UK has seen decreases in its butterfly population since the 1970's [3]. A staggering 80% of the entire butterfly population across Wales, Northern Ireland, Scotland, and England have been observed. This shows that butterfly diversity is decreasing. 
 
 For moths, light pollution was a significant factor that seemed to be aiding in the decrease of moth populations. "Eco-friendly" LED lights replaced many of the typical sodium light bulbs in England [2]. This led to moths hovering around lights, being eaten by predators, and laying less eggs. Thankfully, LED lights are dimable, allowing for a quick fix that would be able to help the struggling moth population.
 
@@ -30,7 +30,7 @@ Ever since I was a young girl, I had been interested in insects. I used to colle
 
 This caterpillar jar had about a dozen caterpillars that I thought were going to turn into butterflies. Once I had lost and then reclaimed my jar, I found silken webs around the inside of the jar. Once I did some research, it turned out that the insects were caterpillar moths. So cool!
 
-So, now there is some background to why I think that they are interesting, lets get into some research! I found some interesting data for butterflies and moths that currently reside (or did) in both Ireland and Great Britain in 2022 [3]. This data set includes ecological traits, excluded species, excluded host subspecies, and host plants. I am using the ecological traits data set. I am exploring if there are specific traits between species provided in this dataset that ultimately determine the species and their decline in population.
+So, now there is some background to why I think that they are interesting, lets get into some research! I found some interesting data for butterflies and moths that currently reside (or did) in both Ireland and Great Britain in 2022 [1]. This data set includes ecological traits, excluded species, excluded host subspecies, and host plants. I am using the ecological traits data set. I am exploring if there are specific traits between species provided in this dataset that ultimately determine the species and their decline in population.
 
 ## Data
 
@@ -353,3 +353,10 @@ It is apparent that the predicted data is not as sensitive to changes as the act
 All-in-all, it seems that the data set that was chosen (and the factors utilized in this research) were not good indicators to predict population scarcity. The data set was very messy and complex, with various different variables. Perhaps given more time and better computing power, a truly full model would be able to better predict what traits factor into scarcity of butterfly and moth populations. 
 
 The random forest model was an interesting way to interpret the data. It provided insight into which variables may hold more predictive power, even if the overall predictive strength of the model remained relatively weak. This hints that while some traits such as nocturnality or immigrant status might play a role, scarcity is likely a result of a much more complex interplay of ecological, environmental, and possibly anthropogenic factors. Future studies could benefit from including spatial distribution data, climate trends, and changes in habitat quality. With cleaner, more comprehensive data and potentially more advanced modeling techniques, stronger and more reliable predictions could be made. Nonetheless, this analysis was a valuable step toward understanding the nuanced factors that influence the population dynamics of butterflies and macro-moths in the UK and Ireland.
+
+## References:
+
+1. Cook, P. M., & et al. (2022). Traits data for the butterflies and macro-moths of Great Britain and Ireland, 2022. Environmental Information Data Centre. https://doi.org/10.5285/33a66d6a-dd9b-4a19-9026-cf1ffb969cdb
+2. LED streetlights decimating moth numbers in England. (n.d.). The Guardian. https://www.theguardian.com/environment/2021/aug/25/led-streetlights-moth-england-eco-friendly-sodium-insect-decline
+3. The State of the UK’s Butterflies 2022 Report. (n.d.). Butterfly Conservation. https://butterfly-conservation.org/state-of-uk-butterflies-2022
+
