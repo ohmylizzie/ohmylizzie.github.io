@@ -16,6 +16,9 @@ knitr::include_graphics("./image/purple_emperor.jpeg")
 ```
 <body style="background-color: lightgrey;">
 
+
+
+
 ## Introduction
 
 Butterflies and moths are a very important part of the ecosystem. They are natural pollinators, important food sources for various animals, and they can indicate ecological changes to the environment. 
@@ -43,7 +46,38 @@ library(easystats)
 library(MASS)
 library(caret)
 library(randomForest)
+library(leaflet)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(dplyr)
 ```
+
+
+```{r leaflet, echo=FALSE, message=FALSE}
+world = ne_countries(scale = "medium", returnclass = "sf")
+
+uk_ireland = world %>% 
+  filter(sovereignt %in% c("United Kingdom", "Ireland"))
+
+leaflet(data = uk_ireland) %>%
+  addTiles() %>%  
+  addPolygons(
+    color = "blue",             
+    weight = 2,                
+    fillColor = "lightblue",    
+    fillOpacity = 0.5,          
+    highlightOptions = highlightOptions(
+      color = "red",           
+      weight = 3,               
+      bringToFront = TRUE       
+    ),
+    label = ~name_long         
+  ) %>%
+  setView(lng = -4, lat = 54, zoom = 5)  
+```
+Map of the United Kingdom and Ireland (I could not get Great Britain to show).
+
 
 ```{r removingupperstuffongraph, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 
@@ -75,6 +109,7 @@ newggplot = data %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
 
 This data shows the number of species and their rarities:
 
