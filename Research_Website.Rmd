@@ -249,6 +249,15 @@ print(best_mod$formula)
 
 
 ```{r compare, echo=FALSE}
+
+
+summary(best_mod)  
+
+
+comparison = compare_performance(logit_model, logit_model2, logit_model3, logit_model4, best_mod)
+
+
+print(comparison)
 compare_performance(logit_model, logit_model2, logit_model3, logit_model4, best_mod) %>% 
   plot()
 ```
